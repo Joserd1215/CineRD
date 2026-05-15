@@ -1,101 +1,52 @@
 import { useMemo, useState } from 'react'
 import './App.css'
+import {
+  dominicanFilms,
+  foreignFilmsInDominicanRepublic,
+} from './filmCatalog'
 
-const movies = [
-  {
-    id: 'carpinteros',
-    title: 'Carpinteros',
-    year: 2017,
-    director: 'Jose Maria Cabral',
-    genre: 'Drama',
-    criticScore: 86,
-    audienceScore: 82,
-    reviews: 148,
-    accent: 'red',
-    logline: 'Un romance tenso dentro del sistema penitenciario dominicano.',
-  },
-  {
-    id: 'la-gunguna',
-    title: 'La Gunguna',
-    year: 2015,
-    director: 'Ernesto Alemany',
-    genre: 'Suspenso',
-    criticScore: 78,
-    audienceScore: 88,
-    reviews: 231,
-    accent: 'blue',
-    logline: 'Una pistola legendaria enlaza crimen, humor negro y destino.',
-  },
-  {
-    id: 'perico-ripiao',
-    title: 'Perico Ripiao',
-    year: 2003,
-    director: 'Angel Muniz',
-    genre: 'Comedia',
-    criticScore: 74,
-    audienceScore: 91,
-    reviews: 306,
-    accent: 'gold',
-    logline: 'Tres fugitivos cruzan el Cibao con musica, picardia y caos.',
-  },
+const filterOptions = [
+  'Todas',
+  'Pioneras',
+  '1970s',
+  '1980s',
+  '1990s',
+  '2000s',
+  '2010s',
+  '2020s',
 ]
 
-const initialOpinions = [
-  {
-    id: 1,
-    movie: 'La Gunguna',
-    author: 'Mariel',
-    rating: 4.5,
-    text: 'Tiene una energia muy dominicana sin perder el pulso de thriller.',
-  },
-  {
-    id: 2,
-    movie: 'Carpinteros',
-    author: 'Rafa',
-    rating: 4,
-    text: 'Dura, bien actuada y con una mirada social que se queda contigo.',
-  },
-]
+const firstFilm = dominicanFilms[0]
+const featuredFilm = dominicanFilms.find((film) => film.title === 'Carpinteros')
+const pioneerFilms = dominicanFilms.slice(0, 2)
+
+function getInitials(title) {
+  return title
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 3)
+    .map((word) => word[0])
+    .join('')
+}
+
+function hideFailedImage(event) {
+  event.currentTarget.hidden = true
+}
 
 function App() {
-  const [selectedMovieId, setSelectedMovieId] = useState(movies[0].id)
-  const [rating, setRating] = useState(4)
-  const [opinion, setOpinion] = useState('')
-  const [opinions, setOpinions] = useState(initialOpinions)
+  const [activeFilter, setActiveFilter] = useState('Todas')
 
-  const selectedMovie = useMemo(
-    () => movies.find((movie) => movie.id === selectedMovieId),
-    [selectedMovieId],
-  )
-
-  const averageAudience = Math.round(
-    movies.reduce((total, movie) => total + movie.audienceScore, 0) /
-      movies.length,
-  )
-
-  function handleSubmit(event) {
-    event.preventDefault()
-
-    if (!opinion.trim()) {
-      return
+  const visibleFilms = useMemo(() => {
+    if (activeFilter === 'Todas') {
+      return dominicanFilms
     }
 
-    setOpinions((currentOpinions) => [
-      {
-        id: Date.now(),
-        movie: selectedMovie.title,
-        author: 'Tu opinion',
-        rating,
-        text: opinion.trim(),
-      },
-      ...currentOpinions,
-    ])
-    setOpinion('')
-  }
+    return dominicanFilms.filter((film) => film.decade === activeFilter)
+  }, [activeFilter])
 
   return (
     <main className="app-shell">
-      <header className="topbar" aria-label="Navegacion principal">
+      <header className="topbar" aria-label="Navegación principal">
         <a className="brand" href="/">
           <span className="brand-mark" aria-hidden="true">
             C
@@ -103,159 +54,194 @@ function App() {
           CineRD
         </a>
         <nav className="nav-links" aria-label="Secciones">
-          <a href="#peliculas">Peliculas</a>
-          <a href="#opinar">Opinar</a>
-          <a href="#ranking">Ranking</a>
+          <a href="#album">Álbum</a>
+          <a href="#pioneras">Pioneras</a>
+          <a href="#catalogo">Catálogo</a>
+          <a href="#externas">Aparte</a>
         </nav>
       </header>
 
-      <section className="intro" aria-labelledby="intro-title">
+      <section className="intro" id="album" aria-labelledby="intro-title">
         <div className="intro-copy">
-          <p className="eyebrow">Cine dominicano, valorado por su publico</p>
-          <h1 id="intro-title">La cartelera critica de RD empieza aqui.</h1>
+          <p className="eyebrow">Archivo dominicano</p>
+          <h1 id="intro-title">Películas hechas en RD por dominicanos.</h1>
           <p className="intro-text">
-            Un espacio para reunir peliculas dominicanas, comparar puntuaciones
-            y dejar opiniones con contexto local.
+            El álbum principal reúne producciones hechas en República Dominicana
+            por cineastas dominicanos. Las rodadas aquí por personas no
+            dominicanas quedan en una sección aparte.
           </p>
           <div className="intro-actions">
-            <a className="primary-action" href="#opinar">
-              Opinar ahora
+            <a className="primary-action" href="#catalogo">
+              Ver álbum
             </a>
-            <a className="secondary-action" href="#peliculas">
-              Ver destacadas
+            <a className="secondary-action" href="#pioneras">
+              Ver pioneras
             </a>
           </div>
         </div>
 
         <div className="spotlight" aria-label="Resumen de CineRD">
-          <div className="spotlight-poster">
-            <span>Cine</span>
-            <strong>RD</strong>
+          <div className={`spotlight-poster album-cover-${featuredFilm.accent}`}>
+            {featuredFilm.photo ? (
+              <img src={featuredFilm.photo} alt="" onError={hideFailedImage} />
+            ) : null}
+            <div className="spotlight-caption">
+              <span>En el álbum</span>
+              <strong>{featuredFilm.title}</strong>
+              <p>{featuredFilm.year} / {featuredFilm.director}</p>
+            </div>
           </div>
           <div className="metric-row">
             <div>
-              <span>{movies.length}</span>
-              <p>peliculas base</p>
+              <span>{dominicanFilms.length}</span>
+              <p>hechas en RD</p>
             </div>
             <div>
-              <span>{averageAudience}</span>
-              <p>promedio publico</p>
+              <span>{firstFilm.year}</span>
+              <p>primer título</p>
             </div>
             <div>
-              <span>{opinions.length}</span>
-              <p>opiniones</p>
+              <span>{foreignFilmsInDominicanRepublic.length}</span>
+              <p>aparte</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="section-heading" id="peliculas">
-        <p className="eyebrow">Primer catalogo</p>
-        <h2>Peliculas destacadas</h2>
+      <section className="section-heading" id="pioneras">
+        <p className="eyebrow">Punto de partida</p>
+        <h2>Las primeras páginas del álbum</h2>
       </section>
 
-      <section
-        className="movie-grid"
-        id="ranking"
-        aria-label="Peliculas dominicanas"
-      >
-        {movies.map((movie) => (
-          <article className="movie-card" key={movie.id}>
-            <div className={`poster poster-${movie.accent}`} aria-hidden="true">
-              <span>{movie.genre}</span>
-              <strong>{movie.title}</strong>
+      <section className="pioneer-grid" aria-label="Películas pioneras">
+        {pioneerFilms.map((film) => (
+          <article className="pioneer-card" key={film.id}>
+            <div className={`pioneer-photo album-cover-${film.accent}`}>
+              {film.photo ? (
+                <img
+                  src={film.photo}
+                  alt={`Imagen de ${film.title}`}
+                  loading="lazy"
+                  onError={hideFailedImage}
+                />
+              ) : (
+                <strong>{getInitials(film.title)}</strong>
+              )}
             </div>
-            <div className="movie-content">
-              <div>
-                <p className="movie-meta">
-                  {movie.year} / {movie.director}
-                </p>
-                <h3>{movie.title}</h3>
-              </div>
-              <p>{movie.logline}</p>
-              <div className="score-strip">
-                <span>
-                  Critica <strong>{movie.criticScore}</strong>
-                </span>
-                <span>
-                  Publico <strong>{movie.audienceScore}</strong>
-                </span>
-                <span>
-                  Votos <strong>{movie.reviews}</strong>
-                </span>
-              </div>
+            <div>
+              <span>{film.year}</span>
+              <h3>{film.title}</h3>
+              <p>{film.note}</p>
+              <strong>{film.director}</strong>
             </div>
           </article>
         ))}
       </section>
 
-      <section className="review-panel" id="opinar" aria-labelledby="opinar-title">
-        <form className="review-form" onSubmit={handleSubmit}>
-          <p className="eyebrow">Tu turno</p>
-          <h2 id="opinar-title">Valora una pelicula</h2>
-
-          <label htmlFor="movie">Pelicula</label>
-          <select
-            id="movie"
-            value={selectedMovieId}
-            onChange={(event) => setSelectedMovieId(event.target.value)}
-          >
-            {movies.map((movie) => (
-              <option key={movie.id} value={movie.id}>
-                {movie.title}
-              </option>
-            ))}
-          </select>
-
-          <fieldset>
-            <legend>Valoracion</legend>
-            <div className="rating-options">
-              {[1, 2, 3, 4, 5].map((value) => (
-                <button
-                  className={rating === value ? 'rating-active' : ''}
-                  key={value}
-                  type="button"
-                  onClick={() => setRating(value)}
-                  aria-pressed={rating === value}
-                >
-                  {value}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-
-          <label htmlFor="opinion">Opinion</label>
-          <textarea
-            id="opinion"
-            rows="4"
-            placeholder={`Que te dejo ${selectedMovie.title}?`}
-            value={opinion}
-            onChange={(event) => setOpinion(event.target.value)}
-          />
-
-          <button className="submit-action" type="submit">
-            Publicar opinion
-          </button>
-        </form>
-
-        <aside className="opinion-feed" aria-label="Opiniones recientes">
-          <p className="eyebrow">Actividad reciente</p>
-          <h2>Opiniones</h2>
-          <div className="feed-list">
-            {opinions.map((item) => (
-              <article className="opinion-card" key={item.id}>
-                <div>
-                  <strong>{item.movie}</strong>
-                  <span>
-                    {item.author} / {item.rating.toFixed(1)}
-                  </span>
-                </div>
-                <p>{item.text}</p>
-              </article>
-            ))}
-          </div>
-        </aside>
+      <section className="catalog-head" id="catalogo">
+        <div>
+          <p className="eyebrow">Catálogo</p>
+          <h2>{activeFilter === 'Todas' ? 'Todas las décadas' : activeFilter}</h2>
+        </div>
+        <p>{visibleFilms.length} títulos en pantalla</p>
       </section>
+
+      <div className="filter-bar" aria-label="Filtrar por década">
+        {filterOptions.map((option) => (
+          <button
+            className={activeFilter === option ? 'filter-active' : ''}
+            key={option}
+            type="button"
+            onClick={() => setActiveFilter(option)}
+            aria-pressed={activeFilter === option}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+
+      <section className="album-grid" aria-label="Álbum de películas dominicanas">
+        {visibleFilms.map((film) => (
+          <article className="album-card" key={film.id}>
+            <figure className={`album-cover album-cover-${film.accent}`}>
+              <div className="cover-fallback" aria-hidden="true">
+                <span>{film.year}</span>
+                <strong>{getInitials(film.title)}</strong>
+              </div>
+              {film.photo ? (
+                <img
+                  src={film.photo}
+                  alt={`Imagen de ${film.title}`}
+                  loading="lazy"
+                  onError={hideFailedImage}
+                />
+              ) : null}
+              <figcaption>
+                <span>{film.type}</span>
+                <strong>{film.year}</strong>
+              </figcaption>
+            </figure>
+            <div className="album-content">
+              <p className="movie-meta">{film.director}</p>
+              <h3>{film.title}</h3>
+              <span className="origin-pill">{film.originLabel}</span>
+              <p>{film.note}</p>
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <section className="foreign-section" id="externas">
+        <div className="catalog-head">
+          <div>
+            <p className="eyebrow">Aparte</p>
+            <h2>Hechas en RD por no dominicanos</h2>
+          </div>
+          <p>{foreignFilmsInDominicanRepublic.length} títulos separados</p>
+        </div>
+        <p className="section-note">
+          Estas no están en el álbum principal porque la dirección no es
+          dominicana, aunque fueron hechas, rodadas o producidas en República
+          Dominicana.
+        </p>
+
+        <section
+          className="album-grid"
+          aria-label="Películas hechas en República Dominicana por no dominicanos"
+        >
+          {foreignFilmsInDominicanRepublic.map((film) => (
+            <article className="album-card" key={film.id}>
+              <figure className={`album-cover album-cover-${film.accent}`}>
+                <div className="cover-fallback" aria-hidden="true">
+                  <span>{film.year}</span>
+                  <strong>{getInitials(film.title)}</strong>
+                </div>
+                {film.photo ? (
+                  <img
+                    src={film.photo}
+                    alt={`Imagen de ${film.title}`}
+                    loading="lazy"
+                    onError={hideFailedImage}
+                  />
+                ) : null}
+                <figcaption>
+                  <span>{film.type}</span>
+                  <strong>{film.year}</strong>
+                </figcaption>
+              </figure>
+              <div className="album-content">
+                <p className="movie-meta">{film.director}</p>
+                <h3>{film.title}</h3>
+                <span className="origin-pill origin-pill-secondary">
+                  {film.originLabel}
+                </span>
+                <p>{film.note}</p>
+              </div>
+            </article>
+          ))}
+        </section>
+      </section>
+
     </main>
   )
 }
