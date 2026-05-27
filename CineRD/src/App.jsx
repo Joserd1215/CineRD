@@ -19,6 +19,7 @@ const filterOptions = [
 const firstFilm = dominicanFilms[0]
 const featuredFilm = dominicanFilms.find((film) => film.title === 'Carpinteros')
 const pioneerFilms = dominicanFilms.slice(0, 2)
+const appBasePath = import.meta.env.BASE_URL
 
 function getInitials(title) {
   return title
@@ -47,7 +48,7 @@ function App() {
   return (
     <main className="app-shell">
       <header className="topbar" aria-label="Navegación principal">
-        <a className="brand" href="/">
+        <a className="brand" href={appBasePath}>
           <span className="brand-mark" aria-hidden="true">
             C
           </span>
